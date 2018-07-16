@@ -5,11 +5,11 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
-@Table(name = "comment", schema = "mashion", catalog = "")
+@Table(name = "comment", schema = "recommendation", catalog = "")
 public class CommentEntity {
     private int commentId;
-    private Integer tweetId;
-    private Integer userId;
+    private TweetEntity tweet;
+    private UserEntity user;
     private String content;
     private Integer likes;
     private Timestamp createTime;
@@ -25,24 +25,24 @@ public class CommentEntity {
         this.commentId = commentId;
     }
 
-    @Basic
-    @Column(name = "tweet_id", nullable = true)
-    public Integer getTweetId() {
-        return tweetId;
+    @ManyToOne
+    @JoinColumn(name = "tweet_id")
+    public TweetEntity getTweet() {
+        return tweet;
     }
 
-    public void setTweetId(Integer tweetId) {
-        this.tweetId = tweetId;
+    public void setTweet(TweetEntity tweet) {
+        this.tweet = tweet;
     }
 
-    @Basic
-    @Column(name = "user_id", nullable = true)
-    public Integer getUserId() {
-        return userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     @Basic
@@ -81,8 +81,8 @@ public class CommentEntity {
         if (o == null || getClass() != o.getClass()) return false;
         CommentEntity that = (CommentEntity) o;
         return commentId == that.commentId &&
-                Objects.equals(tweetId, that.tweetId) &&
-                Objects.equals(userId, that.userId) &&
+                Objects.equals(tweet, that.tweet) &&
+                Objects.equals(user, that.user) &&
                 Objects.equals(content, that.content) &&
                 Objects.equals(likes, that.likes) &&
                 Objects.equals(createTime, that.createTime);
@@ -91,6 +91,6 @@ public class CommentEntity {
     @Override
     public int hashCode() {
 
-        return Objects.hash(commentId, tweetId, userId, content, likes, createTime);
+        return Objects.hash(commentId, tweet, user, content, likes, createTime);
     }
 }

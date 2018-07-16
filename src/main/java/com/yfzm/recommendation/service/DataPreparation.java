@@ -1,18 +1,16 @@
 package com.yfzm.recommendation.service;
 
-import com.yfzm.recommendation.dao.CollocationDao;
-import com.yfzm.recommendation.dao.MongoClothDao;
-import com.yfzm.recommendation.dao.RoleDao;
-import com.yfzm.recommendation.dao.UserDao;
+import com.yfzm.recommendation.dao.*;
 import com.yfzm.recommendation.entity.*;
 import com.yfzm.recommendation.util.Constant;
 import com.yfzm.recommendation.util.GeneralTool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.io.*;
-import java.util.Random;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.util.*;
 
 @Service
 public class DataPreparation {
@@ -21,41 +19,64 @@ public class DataPreparation {
     private final RoleDao roleDao;
     private final MongoClothDao clothDao;
     private final CollocationDao collocationDao;
+    private final CommentDao commentDao;
+    private final TweetDao tweetDao;
 
     private RoleEntity roleEntityNormal;
+    private RoleEntity roleEntityCorporation;
 
     private static final String COLLOCATION_ATTR_FILE_PATH = "src/main/resources/trans_data.txt";
+    private static final String TWEET_FILE_PATH = "src/main/resources/tweets.txt";
 
     @Autowired
-    public DataPreparation(UserDao userDao, RoleDao roleDao, MongoClothDao clothDao, CollocationDao collocationDao) {
+    public DataPreparation(UserDao userDao, RoleDao roleDao, MongoClothDao clothDao, CollocationDao collocationDao, CommentDao commentDao, TweetDao tweetDao) {
         this.userDao = userDao;
         this.roleDao = roleDao;
         this.clothDao = clothDao;
         this.collocationDao = collocationDao;
+        this.commentDao = commentDao;
+        this.tweetDao = tweetDao;
     }
 
     public void initializeDatabase() throws IOException {
         System.out.println("Initialize Database BEGIN");
-        init();
-        insertUser();
-        insertUser();
+        initRoles();
+        initUsers(500, 80);
         initCollocations(COLLOCATION_ATTR_FILE_PATH);
+        initTweets(TWEET_FILE_PATH);
         System.out.println("Initialize Database END");
     }
 
-    private void init() {
+    private void initRoles() {
         clothDao.deleteAll();
         roleEntityNormal = new RoleEntity();
-        roleEntityNormal.setRoleId(1);
-        roleEntityNormal.setRoleDescription("normal");
+        roleEntityNormal.setRoleId(Constant.NORMAL_USER);
+        roleEntityNormal.setRoleDescription("普通");
         roleDao.save(roleEntityNormal);
+        roleEntityCorporation = new RoleEntity();
+        roleEntityCorporation.setRoleId(Constant.CORPORATION_USER);
+        roleEntityCorporation.setRoleDescription("企业");
+        roleDao.save(roleEntityCorporation);
     }
 
-    private void insertUser() {
+    private void initUsers(int normNum, int corpNum) {
+        for (int i = 0; i < normNum; i++) {
+            insertUser(Constant.NORMAL_USER);
+        }
+        for (int i = 0; i < corpNum; i++) {
+            insertUser(Constant.CORPORATION_USER);
+        }
+    }
+
+    private void insertUser(int type) {
         UserEntity user = new UserEntity();
         user.setUsername(generateString(8));
         user.setPhone(generateNum(11));
-        user.setRoleEntity(roleEntityNormal);
+        if (type == Constant.NORMAL_USER) {
+            user.setRoleEntity(roleEntityNormal);
+        } else {
+            user.setRoleEntity(roleEntityCorporation);
+        }
         user.setPassword(generateString(16));
         userDao.save(user);
     }
@@ -117,6 +138,99 @@ public class DataPreparation {
         collocationDao.save(collocationEntity);
     }
 
+    private class Tweet {
+        int tweetId;
+        String title;
+        String description;
+        String detail;
+        int likeCount;
+        int commentCount;
+        int userId;
+        List<Integer> collocationIds;
+        List<Integer> userIds;
+        List<CommentItem> comments;
+
+
+    }
+
+    private class CommentItem {
+        int userId;
+        String content;
+    }
+
+    private void initTweets(String filename) throws IOException {
+        File file = new File(filename);
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        while (reader.ready()) {
+            Tweet tweet = new Tweet();
+            reader.readLine();  // ignore tweet id
+
+            tweet.userId = Integer.valueOf(reader.readLine());
+            tweet.title = reader.readLine();
+            tweet.description = reader.readLine();
+            tweet.detail = reader.readLine();
+            tweet.collocationIds = GeneralTool.convertStringToIntegerList(reader.readLine());
+            tweet.likeCount = Integer.valueOf(reader.readLine());
+            tweet.userIds = GeneralTool.convertStringToIntegerList(reader.readLine());
+            tweet.commentCount = Integer.valueOf(reader.readLine());
+
+            List<CommentItem> comments = new ArrayList<>();
+            for (int i = 0; i < tweet.commentCount; i++) {
+                CommentItem item = new CommentItem();
+                item.userId = Integer.valueOf(reader.readLine());
+                item.content = reader.readLine();
+                comments.add(item);
+            }
+            tweet.comments = comments;
+
+            insertTweet(tweet);
+        }
+    }
+
+    private void insertTweet(Tweet tweet) {
+        TweetEntity tweetEntity = new TweetEntity();
+        tweetEntity.setTitle(tweet.title);
+        tweetEntity.setDescription(tweet.description);
+        tweetEntity.setDetail(tweet.detail);
+        tweetEntity.setLikeCount(tweet.likeCount);
+        tweetEntity.setCommentCount(tweet.commentCount);
+        tweetEntity.setUser(userDao.findByUserId(tweet.userId));
+
+        Set<CollocationEntity> collocations = new HashSet<>();
+        for (Integer collocationId: tweet.collocationIds) {
+            CollocationEntity entity = collocationDao.findByCollocationId(collocationId);
+            Assert.notNull(entity, "Can't find collocation!");
+            collocations.add(entity);
+        }
+        tweetEntity.setCollocations(collocations);
+
+        Set<UserEntity> users = new HashSet<>();
+        for (Integer userId: tweet.userIds) {
+            UserEntity entity = userDao.findByUserId(userId);
+            Assert.notNull(entity, "Can't find user!");
+            users.add(entity);
+        }
+        tweetEntity.setStarUsers(users);
+
+        Set<CommentEntity> comments = new HashSet<>();
+        for (CommentItem item: tweet.comments) {
+            CommentEntity commentEntity = new CommentEntity();
+
+            UserEntity commentUser = userDao.findByUserId(item.userId);
+            Assert.notNull(commentUser, "Can't find commentUser");
+            commentEntity.setUser(commentUser);
+
+            commentEntity.setContent(item.content);
+            commentEntity.setCreateTime(generateTime());
+
+            commentDao.save(commentEntity);
+            comments.add(commentEntity);
+        }
+        tweetEntity.setComments(comments);
+
+        tweetDao.save(tweetEntity);
+    }
+
     public static void main(String[] args) {
         System.out.println(generateString(100));
         System.out.println(generateString(100).length());
@@ -145,5 +259,11 @@ public class DataPreparation {
         return str.toString();
     }
 
+    private static Timestamp generateTime() {
+        long now = new Date().getTime();
+        long ONE_YEAR = (long)365 * 24 * 60 * 60 * 1000;
+        long date = now - (long)(Math.random() * ONE_YEAR);
+        return new Timestamp(date);
+    }
 
 }

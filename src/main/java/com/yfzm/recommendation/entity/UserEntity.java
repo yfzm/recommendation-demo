@@ -6,7 +6,7 @@ import java.util.Set;
 
 
 @Entity
-@Table(name = "user", schema = "mashion", catalog = "")
+@Table(name = "user", schema = "recommendation", catalog = "")
 public class UserEntity {
     private int userId;
     private String username;
@@ -71,7 +71,7 @@ public class UserEntity {
     }
 
 
-    @OneToMany(mappedBy = "collocation")
+    @OneToMany(mappedBy = "collocation", fetch = FetchType.EAGER)
     public Set<UserCollocEntity> getCollocAssoc() {
         return collocAssoc;
     }
@@ -83,14 +83,14 @@ public class UserEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof UserEntity)) return false;
-        UserEntity entity = (UserEntity) o;
-        return userId == entity.userId &&
-                Objects.equals(username, entity.username) &&
-                Objects.equals(password, entity.password) &&
-                Objects.equals(phone, entity.phone) &&
-                Objects.equals(roleEntity, entity.roleEntity) &&
-                Objects.equals(collocAssoc, entity.collocAssoc);
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return userId == that.userId &&
+                Objects.equals(username, that.username) &&
+                Objects.equals(password, that.password) &&
+                Objects.equals(phone, that.phone) &&
+                Objects.equals(roleEntity, that.roleEntity) &&
+                Objects.equals(collocAssoc, that.collocAssoc);
     }
 
     @Override

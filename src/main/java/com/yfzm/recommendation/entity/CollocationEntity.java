@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "collocation", schema = "mashion", catalog = "")
+@Table(name = "collocation", schema = "recommendation", catalog = "")
 public class CollocationEntity {
     private int collocationId;
     private String picUrl;
@@ -55,7 +55,7 @@ public class CollocationEntity {
         this.lowerId = lowerId;
     }
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     public Set<UserCollocEntity> getUserAssoc() {
         return userAssoc;
     }
@@ -72,12 +72,13 @@ public class CollocationEntity {
         return collocationId == that.collocationId &&
                 Objects.equals(picUrl, that.picUrl) &&
                 Objects.equals(upperId, that.upperId) &&
-                Objects.equals(lowerId, that.lowerId);
+                Objects.equals(lowerId, that.lowerId) &&
+                Objects.equals(userAssoc, that.userAssoc);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(collocationId, picUrl, upperId, lowerId);
+        return Objects.hash(collocationId, picUrl, upperId, lowerId, userAssoc);
     }
 }

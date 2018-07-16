@@ -26,4 +26,16 @@ public class GeneralTool {
         }
         return attrs;
     }
+
+    public static List<Integer> convertStringToIntegerList(String line) {
+        JsonParser parser = new JsonParser();
+        JsonArray array = new JsonArray();
+        array.addAll(parser.parse(line).getAsJsonArray());
+
+        List<Integer> list = new ArrayList<>();
+        for (JsonElement attr: array) {
+            list.add(attr.getAsInt());
+        }
+        return list;
+    }
 }

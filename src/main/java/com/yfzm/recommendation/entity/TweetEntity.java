@@ -2,17 +2,21 @@ package com.yfzm.recommendation.entity;
 
 import javax.persistence.*;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
-@Table(name = "tweet", schema = "mashion", catalog = "")
+@Table(name = "tweet", schema = "recommendation", catalog = "")
 public class TweetEntity {
     private int tweetId;
-    private Integer userId;
+    private UserEntity user;
     private String title;
     private String description;
     private String detail;
     private Integer likeCount;
     private Integer commentCount;
+    private Set<CollocationEntity> collocations;
+    private Set<CommentEntity> comments;
+    private Set<UserEntity> starUsers;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +29,14 @@ public class TweetEntity {
         this.tweetId = tweetId;
     }
 
-    @Basic
-    @Column(name = "user_id", nullable = true)
-    public Integer getUserId() {
-        return userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
     @Basic
@@ -85,23 +89,57 @@ public class TweetEntity {
         this.commentCount = commentCount;
     }
 
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
+    @JoinTable(name = "tweet_colloc", joinColumns = {@JoinColumn(name = "tweet_id")},
+            inverseJoinColumns = {@JoinColumn(name = "collocation_id")})
+    public Set<CollocationEntity> getCollocations() {
+        return collocations;
+    }
+
+    public void setCollocations(Set<CollocationEntity> collocations) {
+        this.collocations = collocations;
+    }
+
+    @OneToMany(mappedBy = "tweet")
+    public Set<CommentEntity> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<CommentEntity> comments) {
+        this.comments = comments;
+    }
+
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
+    @JoinTable(name = "star", joinColumns = {@JoinColumn(name = "tweet_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_id")})
+    public Set<UserEntity> getStarUsers() {
+        return starUsers;
+    }
+
+    public void setStarUsers(Set<UserEntity> starUsers) {
+        this.starUsers = starUsers;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TweetEntity that = (TweetEntity) o;
         return tweetId == that.tweetId &&
-                Objects.equals(userId, that.userId) &&
+                Objects.equals(user, that.user) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(detail, that.detail) &&
                 Objects.equals(likeCount, that.likeCount) &&
-                Objects.equals(commentCount, that.commentCount);
+                Objects.equals(commentCount, that.commentCount) &&
+                Objects.equals(collocations, that.collocations) &&
+                Objects.equals(comments, that.comments) &&
+                Objects.equals(starUsers, that.starUsers);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(tweetId, userId, title, description, detail, likeCount, commentCount);
+        return Objects.hash(tweetId, user, title, description, detail, likeCount, commentCount, collocations, comments, starUsers);
     }
 }

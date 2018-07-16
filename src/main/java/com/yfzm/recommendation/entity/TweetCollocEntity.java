@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "tweet_colloc", schema = "mashion", catalog = "")
+@Table(name = "tweet_colloc", schema = "recommendation", catalog = "")
 @IdClass(TweetCollocEntityPK.class)
 public class TweetCollocEntity {
     private int tweetId;

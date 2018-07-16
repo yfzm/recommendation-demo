@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
-@Table(name = "user_colloc", schema = "mashion", catalog = "")
+@Table(name = "user_colloc", schema = "recommendation", catalog = "")
 @IdClass(UserCollocEntityPK.class)
 public class UserCollocEntity {
 //    @EmbeddedId
