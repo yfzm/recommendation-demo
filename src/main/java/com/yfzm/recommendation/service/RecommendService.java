@@ -3,6 +3,7 @@ package com.yfzm.recommendation.service;
 import com.yfzm.recommendation.dao.CollocationDao;
 import com.yfzm.recommendation.dao.MongoClothDao;
 import com.yfzm.recommendation.dao.UserDao;
+import com.yfzm.recommendation.entity.CollocationEntity;
 import com.yfzm.recommendation.entity.MongoClothEntity;
 import com.yfzm.recommendation.util.Constant;
 import org.apache.mahout.math.DenseVector;
@@ -78,9 +79,7 @@ public class RecommendService {
         return v1.dot(v2);
     }
 
-
-    public List<String> getRecommendation(List<Double> attrs) {
-        Vector vec = convertListToVector(attrs);
+    private List<String> getRecommendedItemIds(Vector vec) {
         List<String> targetCloth = new ArrayList<>();
         List<String> distCloth = new ArrayList<>();
         List<String> perfectCloth = new ArrayList<>();
@@ -111,6 +110,17 @@ public class RecommendService {
             return clothNames.subList(0, 5);
         }
         return clothNames;
+    }
+
+    public List<CollocationEntity> getRecommendation(List<Double> attrs) {
+        Vector vec = convertListToVector(attrs);
+        List<String> clothIds = getRecommendedItemIds(vec);
+        List<CollocationEntity> clothes = new ArrayList<>();
+        for (String clothId: clothIds) {
+            CollocationEntity collocationEntity = collocationDao.findByUpperId(clothId);
+            clothes.add(collocationEntity);
+        }
+        return clothes;
     }
 
     private Vector convertListToVector(List<Double> list) {
