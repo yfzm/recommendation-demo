@@ -10,4 +10,6 @@ public interface CollocationDao extends JpaRepository<CollocationEntity, Integer
     CollocationEntity findByCollocationId(Integer id);
 
     CollocationEntity findByUpperId(String id);
+
+    CollocationEntity findByLowerId(String id);
 }

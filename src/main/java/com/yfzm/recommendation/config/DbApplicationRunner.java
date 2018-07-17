@@ -18,6 +18,6 @@ public class DbApplicationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        dataPreparation.initializeDatabase();
+//        dataPreparation.initializeDatabase();
     }
 }
