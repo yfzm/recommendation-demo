@@ -1,6 +1,7 @@
 package com.yfzm.recommendation.entity;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ public class TweetEntity {
     private String title;
     private String description;
     private String detail;
+    private Timestamp createTime;
     private Integer likeCount;
     private Integer commentCount;
     private Set<CollocationEntity> collocations;
@@ -40,7 +42,7 @@ public class TweetEntity {
     }
 
     @Basic
-    @Column(name = "title", nullable = true)
+    @Column(name = "title", nullable = false)
     public String getTitle() {
         return title;
     }
@@ -50,7 +52,7 @@ public class TweetEntity {
     }
 
     @Basic
-    @Column(name = "description", nullable = true)
+    @Column(name = "description", nullable = false)
     public String getDescription() {
         return description;
     }
@@ -60,7 +62,7 @@ public class TweetEntity {
     }
 
     @Basic
-    @Column(name = "detail", nullable = true)
+    @Column(name = "detail", nullable = false)
     public String getDetail() {
         return detail;
     }
@@ -70,7 +72,17 @@ public class TweetEntity {
     }
 
     @Basic
-    @Column(name = "like_count", nullable = true)
+    @Column(name = "create_time", nullable = false)
+    public Timestamp getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
+
+    @Basic
+    @Column(name = "like_count", nullable = false)
     public Integer getLikeCount() {
         return likeCount;
     }
@@ -80,7 +92,7 @@ public class TweetEntity {
     }
 
     @Basic
-    @Column(name = "comment_count", nullable = true)
+    @Column(name = "comment_count", nullable = false)
     public Integer getCommentCount() {
         return commentCount;
     }
@@ -100,7 +112,7 @@ public class TweetEntity {
         this.collocations = collocations;
     }
 
-    @OneToMany(mappedBy = "tweet")
+    @OneToMany(mappedBy = "tweet", cascade = {CascadeType.ALL})
     public Set<CommentEntity> getComments() {
         return comments;
     }

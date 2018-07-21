@@ -195,6 +195,7 @@ public class DataPreparation {
         tweetEntity.setLikeCount(tweet.likeCount);
         tweetEntity.setCommentCount(tweet.commentCount);
         tweetEntity.setUser(userDao.findByUserId(tweet.userId));
+        tweetEntity.setCreateTime(generateTime());
 
         Set<CollocationEntity> collocations = new HashSet<>();
         for (Integer collocationId: tweet.collocationIds) {
@@ -211,8 +212,9 @@ public class DataPreparation {
             users.add(entity);
         }
         tweetEntity.setStarUsers(users);
+        tweetDao.save(tweetEntity);
 
-        Set<CommentEntity> comments = new HashSet<>();
+//        Set<CommentEntity> comments = new HashSet<>();
         for (CommentItem item: tweet.comments) {
             CommentEntity commentEntity = new CommentEntity();
 
@@ -222,13 +224,13 @@ public class DataPreparation {
 
             commentEntity.setContent(item.content);
             commentEntity.setCreateTime(generateTime());
+            commentEntity.setTweet(tweetEntity);
 
             commentDao.save(commentEntity);
-            comments.add(commentEntity);
+//            comments.add(commentEntity);
         }
-        tweetEntity.setComments(comments);
+//        tweetEntity.setComments(comments);
 
-        tweetDao.save(tweetEntity);
     }
 
     public static void main(String[] args) {
