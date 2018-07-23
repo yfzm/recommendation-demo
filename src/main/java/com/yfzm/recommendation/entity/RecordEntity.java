@@ -1,4 +1,4 @@
-package com.kiwi.backend.entity;
+package com.yfzm.recommendation.entity;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

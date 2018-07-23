@@ -4,6 +4,7 @@ import com.yfzm.recommendation.dao.*;
 import com.yfzm.recommendation.entity.*;
 import com.yfzm.recommendation.util.Constant;
 import com.yfzm.recommendation.util.GeneralTool;
+import com.yfzm.recommendation.util.MyGridFsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -25,17 +26,23 @@ public class DataPreparation {
     private RoleEntity roleEntityNormal;
     private RoleEntity roleEntityCorporation;
 
+    private final ProfileDao profileDao;
+    private final MyGridFsUtil myGridFsUtil;
+
     private static final String COLLOCATION_ATTR_FILE_PATH = "src/main/resources/trans_data.txt";
     private static final String TWEET_FILE_PATH = "src/main/resources/tweets.txt";
+    private static final String DEFAULT_PROFILE_PHOTO_NAME = "default_photo.png";
 
     @Autowired
-    public DataPreparation(UserDao userDao, RoleDao roleDao, MongoClothDao clothDao, CollocationDao collocationDao, CommentDao commentDao, TweetDao tweetDao) {
+    public DataPreparation(UserDao userDao, RoleDao roleDao, MongoClothDao clothDao, CollocationDao collocationDao, CommentDao commentDao, TweetDao tweetDao, MyGridFsUtil myGridFsUtil, ProfileDao profileDao) {
         this.userDao = userDao;
         this.roleDao = roleDao;
         this.clothDao = clothDao;
         this.collocationDao = collocationDao;
         this.commentDao = commentDao;
         this.tweetDao = tweetDao;
+        this.myGridFsUtil = myGridFsUtil;
+        this.profileDao = profileDao;
     }
 
     public void initializeDatabase() throws IOException {
@@ -79,6 +86,23 @@ public class DataPreparation {
         }
         user.setPassword(generateString(16));
         userDao.save(user);
+
+        MongoProfileEntity profileEntity = new MongoProfileEntity();
+        profileEntity.setUserId(user.getUserId());
+        profileEntity.setBirthTime(generateTime());
+        profileEntity.setEmail(generateString(11));
+        profileEntity.setGender(Constant.GENDER_FEMALE);
+
+        try {
+            InputStream is = new FileInputStream("src/main/resources/static/" + DEFAULT_PROFILE_PHOTO_NAME);
+            String imageId = myGridFsUtil.saveImage(is, DEFAULT_PROFILE_PHOTO_NAME);
+//            metaData.put("type", "image");
+//            String imageId = gridFsOperations.store(is, DEFAULT_PROFILE_PHOTO_NAME, "image/png", metaData).toString();
+            profileEntity.setPhotoId(imageId);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        profileDao.save(profileEntity);
     }
 
     private void initCollocations(String filename) throws IOException {

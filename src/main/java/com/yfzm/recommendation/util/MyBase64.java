@@ -1,4 +1,4 @@
-package com.kiwi.backend.util.tool;
+package com.yfzm.recommendation.util;
 
 import java.util.Base64;
 
