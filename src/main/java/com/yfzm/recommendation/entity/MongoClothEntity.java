@@ -5,23 +5,19 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Objects;
 
 @Document(collection = "cloth")
 public class MongoClothEntity {
     @Id
     private ObjectId id;
-
     private Integer cId;
-    private List<Integer> tags;
-    private ModelClothItem attr;
 
-//    private Integer type;
-//    private ClothColor color;
-//    private List<Double> texture;
-//    private List<Double> fabric;
-//    private List<Double> shape;
-//    private List<Double> part;
-//    private List<Double> style;
+    private Integer type;
+    private ClothColor color;
+
+    private List<Integer> tags;
+    private List<Double> attr;
 
     public ObjectId getId() {
         return id;
@@ -39,6 +35,22 @@ public class MongoClothEntity {
         this.cId = cId;
     }
 
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public ClothColor getColor() {
+        return color;
+    }
+
+    public void setColor(ClothColor color) {
+        this.color = color;
+    }
+
     public List<Integer> getTags() {
         return tags;
     }
@@ -47,11 +59,30 @@ public class MongoClothEntity {
         this.tags = tags;
     }
 
-    public ModelClothItem getAttr() {
+    public List<Double> getAttr() {
         return attr;
     }
 
-    public void setAttr(ModelClothItem attr) {
+    public void setAttr(List<Double> attr) {
         this.attr = attr;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MongoClothEntity)) return false;
+        MongoClothEntity that = (MongoClothEntity) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(cId, that.cId) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(color, that.color) &&
+                Objects.equals(tags, that.tags) &&
+                Objects.equals(attr, that.attr);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, cId, type, color, tags, attr);
     }
 }

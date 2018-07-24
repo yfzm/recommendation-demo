@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface MongoClothDao extends MongoRepository<MongoClothEntity, String> {
 
-    List<MongoClothEntity> findAllByAttr_Type(int type);
+//    List<MongoClothEntity> findAllByAttr_Type(int type);
 
 }

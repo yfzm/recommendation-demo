@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 
 @Document(collection = "profile")
 public class MongoProfileEntity {
@@ -16,6 +17,7 @@ public class MongoProfileEntity {
     private int gender;
     private String photoId;
     private UserPreference preference;
+    private List<Double> personas;
 
     public ObjectId getId() {
         return id;
@@ -71,5 +73,13 @@ public class MongoProfileEntity {
 
     public void setPreference(UserPreference preference) {
         this.preference = preference;
+    }
+
+    public List<Double> getPersonas() {
+        return personas;
+    }
+
+    public void setPersonas(List<Double> personas) {
+        this.personas = personas;
     }
 }

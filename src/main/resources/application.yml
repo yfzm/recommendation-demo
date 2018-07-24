@@ -2,12 +2,12 @@ server:
   port: 11111
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/recommendation
-    username: yfzm
-    password: recommendation
+    url: jdbc:mysql://localhost:3306/mashion
+    username: root
+    password: sjtuybs@x11404
   data:
     mongodb:
-      uri: mongodb://localhost:27017/recommendation
+      uri: mongodb://localhost:27017/mashion
   jpa:
     properties:
       hibernate:

@@ -92,7 +92,7 @@ public class DataPreparation {
         profileEntity.setBirthTime(generateTime());
         profileEntity.setEmail(generateString(11));
         profileEntity.setGender(Constant.GENDER_FEMALE);
-
+        profileEntity.setPersonas(GeneralTool.generateUserPreference());
         try {
             InputStream is = new FileInputStream("src/main/resources/static/" + DEFAULT_PROFILE_PHOTO_NAME);
             String imageId = myGridFsUtil.saveImage(is, DEFAULT_PROFILE_PHOTO_NAME);
@@ -108,52 +108,30 @@ public class DataPreparation {
     private void initCollocations(String filename) throws IOException {
         File file = new File(filename);
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        while (reader.ready()) {
-            String name = reader.readLine();
-            Integer num = Integer.valueOf(reader.readLine());
-            if (num == 1) {
-                reader.readLine();
-                reader.readLine();
-                reader.readLine();
-                reader.readLine();
-                reader.readLine();
-                continue;
-            }
-            if (num != 2) {
-                throw new RuntimeException("the number of tags is not correct!");
-            }
-            ModelClothItem upperAttr = new ModelClothItem();
-            ModelClothItem lowerAttr = new ModelClothItem();
-            upperAttr.setType(Constant.UPPER_CLOTH);
-            upperAttr.setColor(new ClothColor(0, 0, 0));
-            upperAttr.setTexture(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            upperAttr.setFabric(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            upperAttr.setShape(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            upperAttr.setPart(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            upperAttr.setStyle(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            lowerAttr.setType(Constant.LOWER_CLOTH);
-            lowerAttr.setColor(new ClothColor(255, 255, 255));
-            lowerAttr.setTexture(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            lowerAttr.setFabric(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            lowerAttr.setShape(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            lowerAttr.setPart(GeneralTool.convertStringToDoubleList(reader.readLine()));
-            lowerAttr.setStyle(GeneralTool.convertStringToDoubleList(reader.readLine()));
-
-            if (upperAttr.getTexture().size() + upperAttr.getFabric().size() + upperAttr.getShape().size() + upperAttr.getPart().size() + upperAttr.getStyle().size() != 1000
-                    || lowerAttr.getTexture().size() + lowerAttr.getFabric().size() + lowerAttr.getShape().size() + lowerAttr.getPart().size() + lowerAttr.getStyle().size() != 1000) {
-                throw new RuntimeException("the dimension of attr vector is not correct!");
-            }
+        for (int i = 0; i < 2000; ++i) {
+            String name = GeneralTool.generateImageName();
+            List<Double> upperAttr = GeneralTool.generateUserPreference();
+            List<Double> lowerAttr = GeneralTool.generateUserPreference();
             insertCollocation(name, upperAttr, lowerAttr);
         }
     }
 
-    private void insertCollocation(String picUrl, ModelClothItem upperAttr, ModelClothItem lowerAttr) {
+    private void insertCollocation(String picUrl, List<Double> upperAttr, List<Double> lowerAttr) {
+        Random random = new Random();
         CollocationEntity collocationEntity = new CollocationEntity();
         collocationEntity.setPicUrl(picUrl);
         MongoClothEntity upperCloth = new MongoClothEntity();
         MongoClothEntity lowerCloth = new MongoClothEntity();
+        upperCloth.setType(Constant.UPPER_CLOTH);
+        lowerCloth.setType(Constant.LOWER_CLOTH);
+        ClothColor upperClothColor = new ClothColor(random.nextInt(256),random.nextInt(256),random.nextInt(256));
+        ClothColor lowerClothColor = new ClothColor(random.nextInt(256),random.nextInt(256),random.nextInt(256));
+        upperCloth.setColor(upperClothColor);
+        lowerCloth.setColor(lowerClothColor);
         upperCloth.setAttr(upperAttr);
         lowerCloth.setAttr(lowerAttr);
+        upperCloth.setTags(GeneralTool.generateTags());
+        lowerCloth.setTags(GeneralTool.generateTags());
         clothDao.save(upperCloth);
         clothDao.save(lowerCloth);
 
@@ -222,7 +200,7 @@ public class DataPreparation {
         tweetEntity.setCreateTime(generateTime());
 
         Set<CollocationEntity> collocations = new HashSet<>();
-        for (Integer collocationId: tweet.collocationIds) {
+        for (Integer collocationId : tweet.collocationIds) {
             CollocationEntity entity = collocationDao.findByCollocationId(collocationId);
             Assert.notNull(entity, "Can't find collocation!");
             collocations.add(entity);
@@ -230,7 +208,7 @@ public class DataPreparation {
         tweetEntity.setCollocations(collocations);
 
         Set<UserEntity> users = new HashSet<>();
-        for (Integer userId: tweet.userIds) {
+        for (Integer userId : tweet.userIds) {
             UserEntity entity = userDao.findByUserId(userId);
             Assert.notNull(entity, "Can't find user!");
             users.add(entity);
@@ -239,7 +217,7 @@ public class DataPreparation {
         tweetDao.save(tweetEntity);
 
 //        Set<CommentEntity> comments = new HashSet<>();
-        for (CommentItem item: tweet.comments) {
+        for (CommentItem item : tweet.comments) {
             CommentEntity commentEntity = new CommentEntity();
 
             UserEntity commentUser = userDao.findByUserId(item.userId);
@@ -287,8 +265,8 @@ public class DataPreparation {
 
     private static Timestamp generateTime() {
         long now = new Date().getTime();
-        long ONE_YEAR = (long)365 * 24 * 60 * 60 * 1000;
-        long date = now - (long)(Math.random() * ONE_YEAR);
+        long ONE_YEAR = (long) 365 * 24 * 60 * 60 * 1000;
+        long date = now - (long) (Math.random() * ONE_YEAR);
         return new Timestamp(date);
     }
 
