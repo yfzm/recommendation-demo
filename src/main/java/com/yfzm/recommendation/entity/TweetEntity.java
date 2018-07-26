@@ -101,7 +101,7 @@ public class TweetEntity {
         this.commentCount = commentCount;
     }
 
-    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.REFRESH, CascadeType.MERGE, CascadeType.REMOVE}, fetch = FetchType.EAGER)
     @JoinTable(name = "tweet_colloc", joinColumns = {@JoinColumn(name = "tweet_id")},
             inverseJoinColumns = {@JoinColumn(name = "collocation_id")})
     public Set<CollocationEntity> getCollocations() {

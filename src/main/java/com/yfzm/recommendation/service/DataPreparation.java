@@ -47,11 +47,34 @@ public class DataPreparation {
 
     public void initializeDatabase() throws IOException {
         System.out.println("Initialize Database BEGIN");
-        initRoles();
-        initUsers(500, 80);
-        initCollocations(COLLOCATION_ATTR_FILE_PATH);
-        initTweets(TWEET_FILE_PATH);
+//        initRoles();
+//        initUsers(500, 80);
+//        initCollocations(COLLOCATION_ATTR_FILE_PATH);
+//        initTweets(TWEET_FILE_PATH);
+
+        trans_tweet();
         System.out.println("Initialize Database END");
+    }
+
+    private void trans_tweet() {
+        List<TweetEntity> tweetEntities = tweetDao.findAll();
+        for (TweetEntity tweetEntity: tweetEntities) {
+            Set<Integer> collocationIds = new HashSet<>();
+            Set<CollocationEntity> collocationEntities = tweetEntity.getCollocations();
+            Set<CollocationEntity> newCollocationEntities = new HashSet<>();
+            for (CollocationEntity collocationEntity: collocationEntities) {
+                Integer newId = collocationEntity.getCollocationId() % 91 + 2001;
+                if (collocationIds.contains(newId)) {
+                    System.out.println("delete " + String.valueOf(collocationEntity.getCollocationId()) + ": " + String.valueOf(newId));
+                    continue;
+                }
+                collocationEntity.setCollocationId(newId);
+                newCollocationEntities.add(collocationEntity);
+                collocationIds.add(newId);
+            }
+            tweetEntity.setCollocations(newCollocationEntities);
+            tweetDao.save(tweetEntity);
+        }
     }
 
     private void initRoles() {
